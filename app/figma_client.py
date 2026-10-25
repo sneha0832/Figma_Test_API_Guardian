@@ -44,12 +44,28 @@ class FigmaClient:
             raise FigmaError(f'Figma API HTTP {response.status_code}: {str(detail)[:250] if detail else "Request failed"}', response.status_code)
         return response.json()
 
+    
     async def get_file(self, key):
-        # REQUEST 1: GET /v1/files/{file_key}
-        return await self.request(f'/files/{extract_file_key(key)}', {'depth': 2})
+        # REQUEST 1: Outdated/incorrect Figma endpoint
+        # BUG: /file/ should be /files/
+        return await self.request(
+            f'/file/{extract_file_key(key)}',
+            {'depth': 2}
+        )
 
     async def get_nodes(self, key, node_ids):
-        # REQUEST 2: GET /v1/files/{file_key}/nodes?ids=...
-        if not node_ids or len(node_ids) > 10 or any(not re.fullmatch(r'[0-9]+:[0-9]+', node) for node in node_ids):
-            raise FigmaError('Provide 1-10 valid Figma node IDs (e.g. 1:2).', 400)
-        return await self.request(f'/files/{extract_file_key(key)}/nodes', {'ids': ','.join(node_ids)})
+        # REQUEST 2: Incorrect Figma API query parameter
+        # BUG: node_ids should be ids
+        if not node_ids or len(node_ids) > 10 or any(
+            not re.fullmatch(r'[0-9]+:[0-9]+', node)
+            for node in node_ids
+        ):
+            raise FigmaError(
+                'Provide 1-10 valid Figma node IDs (e.g. 1:2).',
+                400
+            )
+
+        return await self.request(
+            f'/files/{extract_file_key(key)}/nodes',
+            {'node_ids': ','.join(node_ids)}
+        )
