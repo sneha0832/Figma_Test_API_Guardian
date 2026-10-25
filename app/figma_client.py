@@ -46,12 +46,13 @@ class FigmaClient:
 
     
     async def get_file(self, key):
-        # REQUEST 1: Outdated/incorrect Figma endpoint
-        # BUG: /file/ should be /files/
-        return await self.request(
-            f'/file/{extract_file_key(key)}',
-            {'depth': 2}
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://api.figma.com/v1/file/{extract_file_key(key)}",
+                headers={"X-Figma-Token": self.token}
+            )
+            response.raise_for_status()
+            return response.json()
 
     async def get_nodes(self, key, node_ids):
         # REQUEST 2: Incorrect Figma API query parameter
