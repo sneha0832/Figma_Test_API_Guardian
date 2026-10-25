@@ -48,7 +48,7 @@ class FigmaClient:
     async def get_file(self, key):
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"https://api.figma.com/v1/file/{extract_file_key(key)}",
+                f"https://api.figma.com/v1/files/{extract_file_key(key)}",
                 headers={"X-Figma-Token": self.token}
             )
             response.raise_for_status()
@@ -68,5 +68,5 @@ class FigmaClient:
 
         return await self.request(
             f'/files/{extract_file_key(key)}/nodes',
-            {'node_ids': ','.join(node_ids)}
+            {'ids': ','.join(node_ids)}
         )
